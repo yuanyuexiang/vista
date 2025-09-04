@@ -1,0 +1,39 @@
+server:
+  port: 8080
+  mode: debug # debug, release, test
+  read_timeout: 60s
+  write_timeout: 60s
+
+database:
+  driver: mysql
+  host: 117.72.204.201
+  port: 3306
+  username: root
+  password: "njjzwljsyxgs"
+  dbname: vista
+  charset: utf8mb4
+  parse_time: true
+  loc: Local
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600s
+
+jwt:
+  secret: "your-256-bit-secret"
+  expires_hours: 24
+
+log:
+  level: info # debug, info, warn, error
+  format: json # json, console
+  output: stdout # stdout, stderr, file
+  file_path: logs/app.log
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+
+  
+
