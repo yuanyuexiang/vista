@@ -31,8 +31,8 @@ func main() {
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
 	// 设置路由
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	http.Handle("/", playground.Handler("GraphQL playground", "/wechat/query"))
+	http.Handle("/wechat/query", srv)
 
 	// 启动HTTP服务器
 	server := &http.Server{
@@ -46,7 +46,7 @@ func main() {
 	go func() {
 		fmt.Printf("Server starting on port %d\n", config.C.Server.Port)
 		fmt.Printf("GraphQL playground: http://localhost:%d/\n", config.C.Server.Port)
-		fmt.Printf("GraphQL endpoint: http://localhost:%d/query\n", config.C.Server.Port)
+		fmt.Printf("GraphQL endpoint: http://localhost:%d/wechat/query\n", config.C.Server.Port)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(fmt.Sprintf("Failed to start server: %v", err))

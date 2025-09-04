@@ -18,23 +18,6 @@ database:
   max_open_conns: 100
   conn_max_lifetime: 3600s
 
-jwt:
-  secret: "your-256-bit-secret"
-  expires_hours: 24
-
-log:
-  level: info # debug, info, warn, error
-  format: json # json, console
-  output: stdout # stdout, stderr, file
-  file_path: logs/app.log
-
-redis:
-  host: localhost
-  port: 6379
-  password: ""
-  db: 0
-  pool_size: 10
-
 wechat:
   app_id: "wx103412583eab4dfd"
   app_secret: "61cc794ea07bc5d41583ade5a143da49"

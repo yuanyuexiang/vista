@@ -3,7 +3,11 @@
 
 概述：
 
-要在微信中打开网页并获取微信用户的 **ID（openid/unionid）、昵称、头像等信息**，需要借助微信的 **OAuth2 授权登录**，大致流程是这样的：
+要在微信中打开网页并获取微信用户的 **ID（openid/unionid）、昵称、头像等信息**，需要借助微信的 **OAu## 🔌 API 接口
+
+### GraphQL Endpoint
+- **地址**: `http://localhost:8080/wechat/query`
+- **Playground**: `http://localhost:8080/`权登录**，大致流程是这样的：
 
 ---
 
@@ -81,6 +85,44 @@
      "privilege":[]
    }
    ```
+
+---
+
+## � API 接口
+
+### GraphQL Endpoint
+- **地址**: `http://localhost:8080/query`
+- **Playground**: `http://localhost:8080/`
+
+### 主要操作
+
+**授权回调处理**
+```graphql
+mutation {
+  wechatAuthCallback(code: "从微信获取的code") {
+    openid
+    unionid
+    accessToken
+    expiresIn
+  }
+}
+```
+
+**查询用户授权信息**
+```graphql
+query {
+  wechatAuth(openid: "用户的openid") {
+    openid
+    unionid
+    accessToken
+    scope
+  }
+}
+```
+
+## �📚 文档
+
+- **[前端集成指南](./FRONTEND_GUIDE.md)** - 详细的前端接入文档，包含完整的 GraphQL API 使用示例
 
 ---
 
