@@ -35,5 +35,8 @@ redis:
   db: 0
   pool_size: 10
 
-  
-
+wechat:
+  app_id: "wx103412583eab4dfd"
+  app_secret: "61cc794ea07bc5d41583ade5a143da49"
+  redirect_uri: "https://carture.matrix-net.tech/api/wechat/callback"
+  auth_domain: "carture.matrix-net.tech"

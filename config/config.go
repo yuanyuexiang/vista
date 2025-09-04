@@ -14,6 +14,7 @@ type Config struct {
 	JWT      JWTConfig      `mapstructure:"jwt"`
 	Log      LogConfig      `mapstructure:"log"`
 	Redis    RedisConfig    `mapstructure:"redis"`
+	Wechat   WechatConfig   `mapstructure:"wechat"`
 }
 
 type ServerConfig struct {
@@ -56,6 +57,13 @@ type RedisConfig struct {
 	Password string `mapstructure:"password"`
 	DB       int    `mapstructure:"db"`
 	PoolSize int    `mapstructure:"pool_size"`
+}
+
+type WechatConfig struct {
+	AppID       string `mapstructure:"app_id"`
+	AppSecret   string `mapstructure:"app_secret"`
+	RedirectURI string `mapstructure:"redirect_uri"`
+	AuthDomain  string `mapstructure:"auth_domain"`
 }
 
 type OAuth2Config struct {
