@@ -1,0 +1,18 @@
+type WechatAuth {
+  openid: String!
+  unionid: String
+  accessToken: String!
+  expiresIn: Int!
+  refreshToken: String
+  scope: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Query {
+  wechatAuth(openid: String!): WechatAuth
+}
+
+type Mutation {
+  wechatAuthCallback(code: String!): WechatAuth!
+}
