@@ -1,6 +1,8 @@
 module vista
 
-go 1.24
+go 1.22
+
+toolchain go1.24.5
 
 require (
 	github.com/gin-gonic/gin v1.10.1
