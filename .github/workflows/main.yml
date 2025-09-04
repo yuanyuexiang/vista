@@ -12,7 +12,8 @@ jobs:
     name: 编译
     runs-on: ubuntu-latest
     container:
-      image: registry.cn-zhangjiakou.aliyuncs.com/matrix-net/golang-build:1.22.5-bullseye-2
+      #image: registry.cn-zhangjiakou.aliyuncs.com/matrix-net/golang-build:1.22.5-bullseye-2
+      image: golang:1.24.5-bullseye
       env:
         GOPATH: /go
       ports:
