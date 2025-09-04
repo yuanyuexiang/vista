@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"time"
 	"vista/config"
-	"vista/database"
+	"vista/internal/model"
+	"vista/internal/repository"
+	"vista/pkg/logger"
 )
 
 // WechatAuthResult 微信授权结果
@@ -33,7 +35,16 @@ type WechatUserInfo struct {
 }
 
 // WechatOAuthService 微信 OAuth 服务
-type WechatOAuthService struct{}
+type WechatOAuthService struct {
+	userRepo *repository.WechatUserRepository
+}
+
+// NewWechatOAuthService 创建微信 OAuth 服务实例
+func NewWechatOAuthService(userRepo *repository.WechatUserRepository) *WechatOAuthService {
+	return &WechatOAuthService{
+		userRepo: userRepo,
+	}
+}
 
 // ExchangeCodeForToken 用授权码换取 access_token
 func (s *WechatOAuthService) ExchangeCodeForToken(code string) (*WechatAuthResult, error) {
@@ -122,7 +133,7 @@ func (s *WechatOAuthService) SaveUserAuth(authResult *WechatAuthResult, userInfo
 	expiresAt := time.Now().Add(time.Duration(authResult.ExpiresIn) * time.Second)
 
 	// 创建数据库用户模型
-	user := &database.WechatUser{
+	user := &model.WechatUser{
 		OpenID:       authResult.OpenID,
 		UnionID:      authResult.UnionID,
 		Nickname:     userInfo.Nickname,
@@ -139,15 +150,16 @@ func (s *WechatOAuthService) SaveUserAuth(authResult *WechatAuthResult, userInfo
 	}
 
 	// 保存或更新用户信息
-	if err := database.SaveOrUpdateWechatUser(user); err != nil {
+	if err := s.userRepo.Save(user); err != nil {
+		logger.Errorf("Failed to save user to database: %v", err)
 		return fmt.Errorf("failed to save user to database: %v", err)
 	}
 
-	fmt.Printf("成功保存用户授权信息 - OpenID: %s, Nickname: %s\n", userInfo.OpenID, userInfo.Nickname)
+	logger.Infof("Successfully saved user auth - OpenID: %s, Nickname: %s", userInfo.OpenID, userInfo.Nickname)
 	return nil
 }
 
 // GetUserByOpenID 根据 openid 获取用户信息
-func (s *WechatOAuthService) GetUserByOpenID(openid string) (*database.WechatUser, error) {
-	return database.GetWechatUserByOpenID(openid)
+func (s *WechatOAuthService) GetUserByOpenID(openid string) (*model.WechatUser, error) {
+	return s.userRepo.GetByOpenID(openid)
 }

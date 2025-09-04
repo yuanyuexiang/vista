@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"net/url"
 	"vista/config"
-	"vista/database"
+	"vista/internal/database"
+	"vista/internal/repository"
 	"vista/internal/service"
+	"vista/pkg/response"
+	"vista/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +17,7 @@ import (
 // WechatAuth 发起微信授权，重定向到微信授权页面
 func WechatAuth(c *gin.Context) {
 	// 生成 state 参数防止 CSRF 攻击
-	state := generateState()
+	state := utils.GenerateState()
 
 	// 构建微信授权 URL
 	authURL := buildWechatAuthURL(state)
@@ -29,44 +32,37 @@ func WechatCallback(c *gin.Context) {
 	state := c.Query("state")
 
 	if code == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "authorization code is required",
-		})
+		response.BadRequest(c, "authorization code is required")
 		return
 	}
 
 	// 验证 state 参数（这里简化了，实际项目中应该存储在 session 或 cache 中）
 	if state == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid state parameter",
-		})
+		response.BadRequest(c, "invalid state parameter")
 		return
 	}
 
+	// 创建服务实例
+	userRepo := repository.NewWechatUserRepository(database.GetDB())
+	wechatService := service.NewWechatOAuthService(userRepo)
+
 	// 使用 code 换取 access_token 和用户信息
-	wechatService := &service.WechatOAuthService{}
 	authResult, err := wechatService.ExchangeCodeForToken(code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("failed to exchange code: %v", err),
-		})
+		response.InternalServerError(c, fmt.Sprintf("failed to exchange code: %v", err))
 		return
 	}
 
 	// 获取用户信息
 	userInfo, err := wechatService.GetUserInfo(authResult.AccessToken, authResult.OpenID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("failed to get user info: %v", err),
-		})
+		response.InternalServerError(c, fmt.Sprintf("failed to get user info: %v", err))
 		return
 	}
 
 	// 保存用户授权信息
 	if err := wechatService.SaveUserAuth(authResult, userInfo); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("failed to save user auth: %v", err),
-		})
+		response.InternalServerError(c, fmt.Sprintf("failed to save user auth: %v", err))
 		return
 	}
 
@@ -87,16 +83,11 @@ func WechatCallback(c *gin.Context) {
 func HealthCheck(c *gin.Context) {
 	// 检查数据库连接
 	if err := database.HealthCheck(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":   "error",
-			"service":  "vista-wechat-auth",
-			"database": "disconnected",
-			"error":    err.Error(),
-		})
+		response.Error(c, http.StatusInternalServerError, fmt.Sprintf("database health check failed: %v", err))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response.SuccessWithMessage(c, "service is healthy", gin.H{
 		"status":   "ok",
 		"service":  "vista-wechat-auth",
 		"database": "connected",
@@ -114,10 +105,4 @@ func buildWechatAuthURL(state string) string {
 	params.Add("state", state)
 
 	return fmt.Sprintf("%s?%s#wechat_redirect", baseURL, params.Encode())
-}
-
-// generateState 生成随机 state 参数
-func generateState() string {
-	// 这里简化了，实际项目中应该生成更安全的随机字符串
-	return "random_state_123"
 }

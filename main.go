@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 	"vista/config"
-	"vista/database"
+	"vista/internal/database"
 	"vista/internal/router"
 
 	"github.com/gin-gonic/gin"

@@ -2,12 +2,18 @@ package router
 
 import (
 	"vista/internal/handler"
+	"vista/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 // SetupRoutes 设置路由
 func SetupRoutes(r *gin.Engine) {
+	// 添加中间件
+	r.Use(middleware.Logger())
+	r.Use(middleware.Recovery())
+	r.Use(middleware.CORS())
+
 	// 微信授权相关路由
 	wechat := r.Group("/wechat")
 	{
