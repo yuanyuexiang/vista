@@ -10,11 +10,10 @@ import (
 	"time"
 	"vista/config"
 	"vista/database"
-	"vista/internal/router"
-	"vista/pkg/logger"
+	"vista/graph"
 
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 )
 
 func main() {
@@ -23,35 +22,21 @@ func main() {
 		panic(fmt.Sprintf("Failed to initialize config: %v", err))
 	}
 
-	// 初始化日志
-	if err := logger.Init(); err != nil {
-		panic(fmt.Sprintf("Failed to initialize logger: %v", err))
-	}
-	defer logger.Sync()
-
-	// 设置Gin模式
-	gin.SetMode(config.C.Server.Mode)
-
 	// 初始化数据库
 	if err := database.Init(); err != nil {
-		logger.Logger.Fatal("Failed to initialize database", zap.Error(err))
+		panic(fmt.Sprintf("Failed to initialize database: %v", err))
 	}
 
-	// 自动迁移数据库
-	// if err := database.AutoMigrate(); err != nil {
-	// 	logger.Logger.Fatal("Failed to migrate database", zap.Error(err))
-	// }
-
-	// 创建Gin引擎
-	r := gin.New()
+	// 创建 GraphQL handler
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
 	// 设置路由
-	router.Setup(r)
+	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	http.Handle("/query", srv)
 
 	// 启动HTTP服务器
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%d", config.C.Server.Port),
-		Handler:        r,
 		ReadTimeout:    config.C.Server.ReadTimeout,
 		WriteTimeout:   config.C.Server.WriteTimeout,
 		MaxHeaderBytes: 1 << 20, // 1MB
@@ -59,13 +44,12 @@ func main() {
 
 	// 在goroutine中启动服务器
 	go func() {
-		logger.Logger.Info("Server starting",
-			zap.Int("port", config.C.Server.Port),
-			zap.String("mode", config.C.Server.Mode),
-		)
+		fmt.Printf("Server starting on port %d\n", config.C.Server.Port)
+		fmt.Printf("GraphQL playground: http://localhost:%d/\n", config.C.Server.Port)
+		fmt.Printf("GraphQL endpoint: http://localhost:%d/query\n", config.C.Server.Port)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Logger.Fatal("Failed to start server", zap.Error(err))
+			panic(fmt.Sprintf("Failed to start server: %v", err))
 		}
 	}()
 
@@ -74,20 +58,20 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	logger.Logger.Info("Shutting down server...")
+	fmt.Println("Shutting down server...")
 
 	// 设置5秒的超时时间用于现有连接的完成
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Logger.Fatal("Server forced to shutdown", zap.Error(err))
+		panic(fmt.Sprintf("Server forced to shutdown: %v", err))
 	}
 
 	// 关闭数据库连接
 	if err := database.Close(); err != nil {
-		logger.Logger.Error("Failed to close database", zap.Error(err))
+		fmt.Printf("Failed to close database: %v\n", err)
 	}
 
-	logger.Logger.Info("Server exited gracefully")
+	fmt.Println("Server exited gracefully")
 }
