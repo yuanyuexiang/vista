@@ -1,0 +1,24 @@
+# 配置参考 https://segmentfault.com/a/1190000020340570
+version: '3.8'
+
+services:
+  # 后端服务
+  vista:
+    container_name: vista
+    image: ${DOCKER_IMAGE_TAG}
+    restart: always
+    networks:
+      - matrix-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vista.rule=Host(`meteor.matrix-net.tech`) && PathPrefix(`/websocket`)"
+      - "traefik.http.routers.vista.entrypoints=websecure"
+      - "traefik.http.routers.vista.tls.certresolver=aliyunresolver"
+      - "traefik.http.services.vista.loadbalancer.server.port=8080"
+    ports:
+      - "8080"
+
+networks:
+  matrix-network:
+    driver: bridge
+    name: matrix-network
