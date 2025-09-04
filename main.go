@@ -10,10 +10,9 @@ import (
 	"time"
 	"vista/config"
 	"vista/database"
-	"vista/graph"
+	"vista/internal/router"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -27,16 +26,16 @@ func main() {
 		panic(fmt.Sprintf("Failed to initialize database: %v", err))
 	}
 
-	// 创建 GraphQL handler
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	// 创建 Gin 路由
+	r := gin.Default()
 
 	// 设置路由
-	http.Handle("/", playground.Handler("GraphQL playground", "/wechat/query"))
-	http.Handle("/wechat/query", srv)
+	router.SetupRoutes(r)
 
 	// 启动HTTP服务器
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%d", config.C.Server.Port),
+		Handler:        r,
 		ReadTimeout:    config.C.Server.ReadTimeout,
 		WriteTimeout:   config.C.Server.WriteTimeout,
 		MaxHeaderBytes: 1 << 20, // 1MB
@@ -45,8 +44,8 @@ func main() {
 	// 在goroutine中启动服务器
 	go func() {
 		fmt.Printf("Server starting on port %d\n", config.C.Server.Port)
-		fmt.Printf("GraphQL playground: http://localhost:%d/\n", config.C.Server.Port)
-		fmt.Printf("GraphQL endpoint: http://localhost:%d/wechat/query\n", config.C.Server.Port)
+		fmt.Printf("WeChat Auth URL: http://localhost:%d/wechat/auth\n", config.C.Server.Port)
+		fmt.Printf("WeChat Callback URL: http://localhost:%d/wechat/callback\n", config.C.Server.Port)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(fmt.Sprintf("Failed to start server: %v", err))
