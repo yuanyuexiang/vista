@@ -64,14 +64,15 @@ func WechatCallback(c *gin.Context) {
 
 	fmt.Printf("Successfully got access token for OpenID: %s\n", authResult.OpenID)
 
-	// 订阅号只能获取 openid，无法获取用户详细信息
-	// 跳过获取用户信息步骤，直接使用基本信息
-	userInfo := &service.WechatUserInfo{
-		OpenID:   authResult.OpenID,
-		Nickname: "微信用户", // 订阅号无法获取真实昵称
+	// 测试号支持获取完整用户信息
+	userInfo, err := wechatService.GetUserInfo(authResult.AccessToken, authResult.OpenID)
+	if err != nil {
+		fmt.Printf("Error getting user info: %v\n", err)
+		response.InternalServerError(c, fmt.Sprintf("获取用户信息失败: %v", err))
+		return
 	}
 
-	fmt.Printf("Using basic user info for subscription account - OpenID: %s\n", userInfo.OpenID)
+	fmt.Printf("Successfully got user info - OpenID: %s, Nickname: %s\n", userInfo.OpenID, userInfo.Nickname)
 
 	// 保存用户授权信息
 	if err := wechatService.SaveUserAuth(authResult, userInfo); err != nil {
@@ -87,8 +88,9 @@ func WechatCallback(c *gin.Context) {
 		"message": "微信登录成功",
 		"user_info": gin.H{
 			"openid":   authResult.OpenID,
-			"nickname": "微信用户", // 订阅号限制
-			"note":     "订阅号只能获取openid，无法获取用户详细信息",
+			"nickname": userInfo.Nickname,
+			"avatar":   userInfo.HeadImgURL,
+			"note":     "使用微信测试号获取完整用户信息",
 		},
 	})
 }
@@ -111,17 +113,24 @@ func HealthCheck(c *gin.Context) {
 // buildWechatAuthURL 构建微信授权 URL
 func buildWechatAuthURL(state string) string {
 	cfg := config.Get()
-	// 微信公众号网页授权URL
-	baseURL := "https://open.weixin.qq.com/connect/oauth2/authorize"
-	params := url.Values{}
-	params.Add("appid", cfg.Wechat.AppID)
-	params.Add("redirect_uri", cfg.Wechat.RedirectURI)
-	params.Add("response_type", "code")
-	params.Add("scope", "snsapi_base") // 订阅号只能使用 snsapi_base
-	params.Add("state", state)
 
-	fmt.Printf("Building WeChat MP auth URL (snsapi_base) - AppID: %s, RedirectURI: %s, State: %s\n",
-		cfg.Wechat.AppID, cfg.Wechat.RedirectURI, state)
+	// 使用URL编码的回调地址
+	redirectURI := url.QueryEscape(cfg.Wechat.RedirectURI)
 
-	return fmt.Sprintf("%s?%s#wechat_redirect", baseURL, params.Encode())
+	// 构建授权URL - 测试号支持完整功能，使用 snsapi_userinfo
+	authURL := fmt.Sprintf(
+		"https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_userinfo&state=%s#wechat_redirect",
+		cfg.Wechat.AppID,
+		redirectURI,
+		state,
+	)
+
+	fmt.Printf("Building WeChat Test Account auth URL:\n")
+	fmt.Printf("  AppID: %s\n", cfg.Wechat.AppID)
+	fmt.Printf("  RedirectURI: %s\n", cfg.Wechat.RedirectURI)
+	fmt.Printf("  EncodedURI: %s\n", redirectURI)
+	fmt.Printf("  State: %s\n", state)
+	fmt.Printf("  Final URL: %s\n", authURL)
+
+	return authURL
 }

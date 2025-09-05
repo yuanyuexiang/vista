@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>微信登录测试</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+</head>
+<body>
+    <h1>微信登录测试页面</h1>
+    <div id="result"></div>
+    
+    <script>
+        // 检查是否在微信环境中
+        function isWechat() {
+            return /micromessenger/i.test(navigator.userAgent);
+        }
+        
+        if (isWechat()) {
+            document.getElementById('result').innerHTML = `
+                <p>✅ 检测到微信环境</p>
+                <p>User Agent: ${navigator.userAgent}</p>
+                <button onclick="testAuth()">测试授权</button>
+            `;
+        } else {
+            document.getElementById('result').innerHTML = `
+                <p>❌ 请在微信中打开此页面</p>
+                <p>User Agent: ${navigator.userAgent}</p>
+            `;
+        }
+        
+        function testAuth() {
+            // 直接跳转到授权页面
+            window.location.href = '/wechat/auth';
+        }
+        
+        // 如果URL中有参数，显示它们
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('code')) {
+            document.getElementById('result').innerHTML += `
+                <h2>收到授权回调</h2>
+                <p>Code: ${urlParams.get('code')}</p>
+                <p>State: ${urlParams.get('state')}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
