@@ -11,7 +11,7 @@ services:
       - matrix-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.vista.rule=Host(`carture.matrix-net.tech`) && PathPrefix(`/wechat`)"
+      - "traefik.http.routers.vista.rule=Host(`carture.matrix-net.tech`) && PathPrefix(`/vista`)"
       - "traefik.http.routers.vista.entrypoints=websecure"
       - "traefik.http.routers.vista.tls.certresolver=aliyunresolver"
       - "traefik.http.services.vista.loadbalancer.server.port=8080"
