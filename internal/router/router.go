@@ -14,15 +14,14 @@ func SetupRoutes(r *gin.Engine) {
 	r.Use(middleware.Recovery())
 	r.Use(middleware.CORS())
 
-	// 演示页面
-	r.StaticFile("/", "./wechat_frontend_driven.html")                       // 主页：前端驱动模式
-	r.StaticFile("/wechat/frontend-driven", "./wechat_frontend_driven.html") // 前端驱动模式演示页面
+	// 演示页面 主页：前端驱动模式
+	r.StaticFile("/vista/wechat/frontend-driven", "./wechat_frontend_driven.html") // 前端驱动模式演示页面
 
 	// 核心API接口
-	api := r.Group("/api")
+	api := r.Group("/vista/wechat/api")
 	{
 		// 通过code获取用户信息并保存
-		api.POST("/wechat/auth", handler.WechatAuthByCode)
+		api.POST("/auth", handler.WechatAuthByCode)
 
 		// 查询用户信息，判断是否需要重新授权
 		api.GET("/user/:openid", handler.GetUserInfo)

@@ -154,7 +154,7 @@
             <h4>🔗 后端API接口</h4>
             <div class="code-block">
                 <pre>// 1. 通过code获取用户信息
-POST /api/wechat/auth
+POST /vista/wechat/api/auth
 Content-Type: application/json
 {
   "code": "微信授权码",
@@ -162,7 +162,7 @@ Content-Type: application/json
 }
 
 // 2. 查询用户信息和授权状态
-GET /api/user/{openid}
+GET /vista/wechat/api/user/{openid}
 
 响应：
 {
@@ -249,7 +249,7 @@ GET /api/user/{openid}
             
             try {
                 // 调用后端接口获取用户信息
-                const response = await fetch(`${CONFIG.API_BASE}/api/wechat/auth`, {
+                const response = await fetch(`${CONFIG.API_BASE}/vista/wechat/api/auth`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -297,7 +297,7 @@ GET /api/user/{openid}
             showStatus('🔍 正在检查授权状态...', 'info');
             
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/api/user/${openid}`);
+                const response = await fetch(`${CONFIG.API_BASE}/vista/wechat/api/user/${openid}`);
                 const data = await response.json();
                 
                 if (data.code === 200) {
