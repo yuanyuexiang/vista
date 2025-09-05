@@ -3,14 +3,14 @@
 ## 概述
 
 新架构采用前端驱动模式，后端只提供两个核心API接口：
-1. **通过code获取用户信息** - `POST /api/wechat/auth`
-2. **查询用户授权状态** - `GET /api/user/{openid}`
+1. **通过code获取用户信息** - `POST /vista/wechat/api/auth`
+2. **查询用户授权状态** - `GET /vista/wechat/api/user/{openid}`
 
 ## API接口详情
 
 ### 1. 通过授权码获取用户信息
 
-**接口地址：** `POST /api/wechat/auth`
+**接口地址：** `POST /vista/wechat/api/auth`
 
 **请求头：**
 ```
@@ -60,7 +60,7 @@ Content-Type: application/json
 
 ### 2. 查询用户授权状态
 
-**接口地址：** `GET /api/user/{openid}`
+**接口地址：** `GET /vista/wechat/api/user/{openid}`
 
 **路径参数：**
 - `openid`: 微信用户的OpenID
@@ -137,7 +137,7 @@ function buildWechatAuthURL() {
 ```javascript
 async function handleWechatCallback(code, state) {
     try {
-        const response = await fetch('/api/wechat/auth', {
+        const response = await fetch('/vista/wechat/api/auth', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ async function handleWechatCallback(code, state) {
 ```javascript
 async function checkAuthStatus(openid) {
     try {
-        const response = await fetch(`/api/user/${openid}`);
+        const response = await fetch(`/vista/wechat/api/user/${openid}`);
         const data = await response.json();
         
         if (data.code === 200) {
@@ -258,7 +258,7 @@ window.onload = function() {
 ### 前端错误处理建议
 ```javascript
 try {
-    const response = await fetch('/api/wechat/auth', { ... });
+    const response = await fetch('/vista/wechat/api/auth', { ... });
     const data = await response.json();
     
     if (data.code !== 200) {
