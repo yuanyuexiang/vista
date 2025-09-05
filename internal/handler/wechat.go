@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 	"vista/config"
 	"vista/internal/database"
 	"vista/internal/repository"
@@ -84,28 +86,45 @@ func WechatCallback(c *gin.Context) {
 
 	fmt.Println("Successfully saved user auth to database")
 
-	// 检查是否是AJAX请求
+	// 检查是否需要重定向到前端应用
+	redirectURL := c.Query("redirect_url")
+	if redirectURL == "" {
+		redirectURL = "https://carture.matrix-net.tech/" // 默认重定向到React应用
+	}
+
+	// 构建用户信息JSON
+	userInfoData := gin.H{
+		"openid":     authResult.OpenID,
+		"nickname":   userInfo.Nickname,
+		"headimgurl": userInfo.HeadImgURL,
+		"sex":        userInfo.Sex,
+		"language":   userInfo.Language,
+		"country":    userInfo.Country,
+		"province":   userInfo.Province,
+		"city":       userInfo.City,
+		"privilege":  userInfo.Privilege,
+		"login_time": time.Now().Unix(),
+	}
+
+	// 将用户信息编码为base64，通过URL参数传递
+	userInfoJson, _ := json.Marshal(userInfoData)
+	userInfoB64 := base64.URLEncoding.EncodeToString(userInfoJson)
+
+	// 检查是否是AJAX请求或需要JSON响应
 	if c.GetHeader("X-Requested-With") == "XMLHttpRequest" ||
 		c.GetHeader("Accept") == "application/json" ||
 		c.Query("format") == "json" {
 		// 返回JSON响应
 		response.Success(c, gin.H{
-			"message": "微信登录成功",
-			"user_info": gin.H{
-				"openid":     authResult.OpenID,
-				"nickname":   userInfo.Nickname,
-				"headimgurl": userInfo.HeadImgURL,
-				"sex":        userInfo.Sex,
-				"language":   userInfo.Language,
-				"country":    userInfo.Country,
-				"province":   userInfo.Province,
-				"city":       userInfo.City,
-				"privilege":  userInfo.Privilege,
-				"note":       "使用微信测试号获取完整用户信息",
-			},
+			"message":   "微信登录成功",
+			"user_info": userInfoData,
 		})
 		return
 	}
+
+	// 重定向到React应用，携带用户信息
+	finalRedirectURL := fmt.Sprintf("%s?wechat_auth=success&user_info=%s", redirectURL, userInfoB64)
+	c.Redirect(http.StatusFound, finalRedirectURL)
 
 	// 返回HTML页面，包含用户信息供前端JavaScript获取
 	htmlContent := fmt.Sprintf(`
