@@ -14,24 +14,18 @@ func SetupRoutes(r *gin.Engine) {
 	r.Use(middleware.Recovery())
 	r.Use(middleware.CORS())
 
-	// 静态文件服务（用于测试）
-	r.StaticFile("/wechat/test", "./test_wechat.html")
-	r.StaticFile("/wechat/demo", "./wechat_demo.html")      // 微信自动授权演示页面
-	r.StaticFile("/wechat/react-test", "./react_test.html") // React集成测试页面
-	r.StaticFile("/test-redirect", "./test_redirect.html")  // 重定向测试页面
+	// 演示页面
+	r.StaticFile("/", "./wechat_frontend_driven.html")                       // 主页：前端驱动模式
+	r.StaticFile("/wechat/frontend-driven", "./wechat_frontend_driven.html") // 前端驱动模式演示页面
 
-	// 微信授权相关路由
-	wechat := r.Group("/wechat")
-	{
-		wechat.GET("/auth", handler.WechatAuth)         // 发起微信授权
-		wechat.GET("/callback", handler.WechatCallback) // 微信授权回调
-	}
-
-	// API路由 - 前端获取用户信息
+	// 核心API接口
 	api := r.Group("/api")
 	{
-		api.GET("/user/:openid", handler.GetUserInfo) // 获取单个用户信息
-		api.GET("/users", handler.GetAllUsers)        // 获取所有用户列表
+		// 通过code获取用户信息并保存
+		api.POST("/wechat/auth", handler.WechatAuthByCode)
+
+		// 查询用户信息，判断是否需要重新授权
+		api.GET("/user/:openid", handler.GetUserInfo)
 	}
 
 	// 健康检查

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信授权 - 前端驱动模式</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #07c160;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background: #06ad56; }
+        .btn-secondary { background: #1890ff; }
+        .btn-secondary:hover { background: #1976d2; }
+        
+        .user-card {
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #fafafa;
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            float: left;
+            margin-right: 15px;
+        }
+        .user-info {
+            overflow: hidden;
+        }
+        .nickname {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .openid {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+        }
+        .clear { clear: both; }
+        
+        .code-block {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            overflow-x: auto;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .status.error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #f5222d;
+        }
+        .status.info {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #1890ff;
+        }
+        
+        .hidden { display: none; }
+        
+        .api-section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #52c41a;
+            background: #f6ffed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 微信授权 - 前端驱动模式</h1>
+        <p>完全由前端控制授权流程，后端只提供两个核心API接口</p>
+
+        <!-- 用户信息显示区域 -->
+        <div id="userDisplay" class="hidden">
+            <h3>✅ 已登录</h3>
+            <div id="userCard" class="user-card"></div>
+            <button class="btn btn-secondary" onclick="clearUserInfo()">清除信息</button>
+            <button class="btn btn-secondary" onclick="forceReauth()">强制重新授权</button>
+        </div>
+
+        <!-- 登录区域 -->
+        <div id="loginSection">
+            <h3>🔑 微信登录</h3>
+            <p>当前状态：<span id="authStatus">检查中...</span></p>
+            
+            <button class="btn" onclick="startWechatAuth()" id="authBtn" disabled>
+                开始微信授权
+            </button>
+            
+            <button class="btn btn-secondary" onclick="checkAuthStatus()">
+                检查授权状态
+            </button>
+        </div>
+
+        <!-- 状态显示 -->
+        <div id="statusArea"></div>
+
+        <!-- API架构说明 -->
+        <div class="api-section">
+            <h3>📖 新架构说明</h3>
+            
+            <h4>🔄 前端驱动流程</h4>
+            <ol>
+                <li><strong>前端构建授权链接</strong> - 直接构建微信OAuth URL</li>
+                <li><strong>获取授权码</strong> - 微信回调返回code参数</li>
+                <li><strong>发送code到后端</strong> - 调用 <code>POST /api/wechat/auth</code></li>
+                <li><strong>检查授权状态</strong> - 调用 <code>GET /api/user/{openid}</code></li>
+            </ol>
+            
+            <h4>🔗 后端API接口</h4>
+            <div class="code-block">
+                <pre>// 1. 通过code获取用户信息
+POST /api/wechat/auth
+Content-Type: application/json
+{
+  "code": "微信授权码",
+  "state": "可选状态参数"
+}
+
+// 2. 查询用户信息和授权状态
+GET /api/user/{openid}
+
+响应：
+{
+  "code": 200,
+  "data": {
+    "exists": true,          // 用户是否存在
+    "need_auth": false,      // 是否需要重新授权
+    "user_info": { ... }     // 用户详细信息
+  }
+}</pre>
+            </div>
+            
+            <h4>⚡ 优势</h4>
+            <ul>
+                <li>✅ <strong>前端控制</strong> - 授权流程完全由前端控制</li>
+                <li>✅ <strong>接口简洁</strong> - 后端只有两个核心接口</li>
+                <li>✅ <strong>状态检查</strong> - 智能判断是否需要重新授权</li>
+                <li>✅ <strong>易于集成</strong> - 适配任何前端框架</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const CONFIG = {
+            API_BASE: 'https://carture.matrix-net.tech',
+            WECHAT_APP_ID: 'wx1eb05232cfbb49f7', // 微信测试号AppID
+            STORAGE_KEY: 'wechat_user_info',
+            OPENID_KEY: 'wechat_openid'
+        };
+
+        // 页面加载时检查授权状态
+        window.onload = function() {
+            // 首先检查URL是否有微信回调的code
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            
+            if (code) {
+                handleWechatCallback(code, state);
+            } else {
+                checkAuthStatus();
+            }
+        };
+
+        // 检查是否在微信浏览器中
+        function isWechatBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            return /micromessenger/.test(ua);
+        }
+
+        // 构建微信授权URL
+        function buildWechatAuthURL() {
+            const redirectURI = encodeURIComponent(window.location.href.split('?')[0]);
+            const state = generateState();
+            
+            return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${CONFIG.WECHAT_APP_ID}&redirect_uri=${redirectURI}&response_type=code&scope=snsapi_userinfo&state=${state}#wechat_redirect`;
+        }
+
+        // 生成随机state参数
+        function generateState() {
+            return 'state_' + Math.random().toString(36).substr(2, 16) + Date.now();
+        }
+
+        // 开始微信授权
+        function startWechatAuth() {
+            if (!isWechatBrowser()) {
+                showStatus('⚠️ 请在微信中打开此页面进行授权', 'error');
+                return;
+            }
+
+            showStatus('🔄 正在跳转到微信授权页面...', 'info');
+            
+            // 构建授权URL并跳转
+            const authURL = buildWechatAuthURL();
+            setTimeout(() => {
+                window.location.href = authURL;
+            }, 1000);
+        }
+
+        // 处理微信回调
+        async function handleWechatCallback(code, state) {
+            showStatus('🔄 正在处理微信授权回调...', 'info');
+            
+            try {
+                // 调用后端接口获取用户信息
+                const response = await fetch(`${CONFIG.API_BASE}/api/wechat/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        state: state
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    // 授权成功，保存用户信息
+                    const userInfo = data.data.user_info;
+                    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(userInfo));
+                    localStorage.setItem(CONFIG.OPENID_KEY, userInfo.openid);
+                    
+                    // 清理URL参数
+                    const url = new URL(window.location);
+                    url.searchParams.delete('code');
+                    url.searchParams.delete('state');
+                    window.history.replaceState({}, document.title, url.toString());
+                    
+                    showStatus('✅ 微信授权成功！', 'success');
+                    displayUserInfo(userInfo);
+                } else {
+                    showStatus(`❌ 授权失败: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ 网络错误: ${error.message}`, 'error');
+                console.error('授权处理失败:', error);
+            }
+        }
+
+        // 检查授权状态
+        async function checkAuthStatus() {
+            const openid = localStorage.getItem(CONFIG.OPENID_KEY);
+            
+            if (!openid) {
+                updateAuthStatus('未登录', 'need_auth');
+                return;
+            }
+
+            showStatus('🔍 正在检查授权状态...', 'info');
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/api/user/${openid}`);
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    const result = data.data;
+                    
+                    if (!result.exists) {
+                        updateAuthStatus('用户不存在，需要重新授权', 'need_auth');
+                        localStorage.removeItem(CONFIG.STORAGE_KEY);
+                        localStorage.removeItem(CONFIG.OPENID_KEY);
+                    } else if (result.need_auth) {
+                        updateAuthStatus('授权已过期，需要重新授权', 'need_auth');
+                    } else {
+                        updateAuthStatus('已授权', 'authorized');
+                        displayUserInfo(result.user_info);
+                    }
+                } else {
+                    updateAuthStatus('检查失败', 'error');
+                }
+            } catch (error) {
+                updateAuthStatus('网络错误', 'error');
+                console.error('状态检查失败:', error);
+            }
+        }
+
+        // 更新授权状态显示
+        function updateAuthStatus(status, type) {
+            const statusElement = document.getElementById('authStatus');
+            const authBtn = document.getElementById('authBtn');
+            
+            statusElement.textContent = status;
+            
+            if (type === 'need_auth') {
+                authBtn.disabled = false;
+                authBtn.textContent = '开始微信授权';
+            } else if (type === 'authorized') {
+                authBtn.disabled = true;
+                authBtn.textContent = '已授权';
+            } else {
+                authBtn.disabled = false;
+                authBtn.textContent = '重试';
+            }
+        }
+
+        // 显示用户信息
+        function displayUserInfo(userInfo) {
+            const userCard = document.getElementById('userCard');
+            const userDisplay = document.getElementById('userDisplay');
+            const loginSection = document.getElementById('loginSection');
+
+            const expireDate = userInfo.expires_at ? new Date(userInfo.expires_at * 1000).toLocaleString() : '未知';
+
+            userCard.innerHTML = `
+                <img class="avatar" src="${userInfo.headimgurl || ''}" alt="头像" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiNmMGYwZjAiLz4KPHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHRleHQgeD0iMzAiIHk9IjM1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5Ij7op6blg488L3RleHQ+Cjwvc3ZnPgo='"/>
+                <div class="user-info">
+                    <div class="nickname">${userInfo.nickname || '未知用户'}</div>
+                    <div class="openid">OpenID: ${userInfo.openid}</div>
+                    <div>性别: ${getSexText(userInfo.sex)}</div>
+                    <div>地区: ${[userInfo.country, userInfo.province, userInfo.city].filter(Boolean).join(' ') || '未知'}</div>
+                    <div>授权过期: ${expireDate}</div>
+                </div>
+                <div class="clear"></div>
+                <div class="code-block">
+                    <pre>${JSON.stringify(userInfo, null, 2)}</pre>
+                </div>
+            `;
+
+            userDisplay.classList.remove('hidden');
+            loginSection.style.display = 'none';
+        }
+
+        // 获取性别文本
+        function getSexText(sex) {
+            switch(sex) {
+                case 1: return '男';
+                case 2: return '女';
+                default: return '未知';
+            }
+        }
+
+        // 清除用户信息
+        function clearUserInfo() {
+            localStorage.removeItem(CONFIG.STORAGE_KEY);
+            localStorage.removeItem(CONFIG.OPENID_KEY);
+            
+            document.getElementById('userDisplay').classList.add('hidden');
+            document.getElementById('loginSection').style.display = 'block';
+            
+            updateAuthStatus('已清除', 'need_auth');
+            showStatus('✅ 用户信息已清除', 'success');
+        }
+
+        // 强制重新授权
+        function forceReauth() {
+            clearUserInfo();
+            startWechatAuth();
+        }
+
+        // 显示状态信息
+        function showStatus(message, type = 'success') {
+            const statusArea = document.getElementById('statusArea');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = `<strong>${message}</strong>`;
+            statusArea.appendChild(statusDiv);
+
+            // 5秒后自动移除
+            setTimeout(() => {
+                if (statusArea.contains(statusDiv)) {
+                    statusArea.removeChild(statusDiv);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
