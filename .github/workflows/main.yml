@@ -63,6 +63,8 @@ jobs:
             config.yaml
             frontend_demo.html
             test_wechat.html
+            react_test.html
+            react-components
 
   # 打包镜像
   build-package:
