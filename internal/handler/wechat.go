@@ -87,10 +87,16 @@ func WechatCallback(c *gin.Context) {
 	response.Success(c, gin.H{
 		"message": "微信登录成功",
 		"user_info": gin.H{
-			"openid":   authResult.OpenID,
-			"nickname": userInfo.Nickname,
-			"avatar":   userInfo.HeadImgURL,
-			"note":     "使用微信测试号获取完整用户信息",
+			"openid":     authResult.OpenID,
+			"nickname":   userInfo.Nickname,
+			"headimgurl": userInfo.HeadImgURL,
+			"sex":        userInfo.Sex,
+			"language":   userInfo.Language,
+			"country":    userInfo.Country,
+			"province":   userInfo.Province,
+			"city":       userInfo.City,
+			"privilege":  userInfo.Privilege,
+			"note":       "使用微信测试号获取完整用户信息",
 		},
 	})
 }

@@ -24,14 +24,16 @@ type WechatAuthResult struct {
 
 // WechatUserInfo 微信用户信息
 type WechatUserInfo struct {
-	OpenID     string `json:"openid"`
-	UnionID    string `json:"unionid,omitempty"`
-	Nickname   string `json:"nickname"`
-	Sex        int    `json:"sex"`
-	Province   string `json:"province"`
-	City       string `json:"city"`
-	Country    string `json:"country"`
-	HeadImgURL string `json:"headimgurl"`
+	OpenID     string        `json:"openid"`
+	UnionID    string        `json:"unionid,omitempty"`
+	Nickname   string        `json:"nickname"`
+	Sex        int           `json:"sex"`
+	Language   string        `json:"language"`
+	Province   string        `json:"province"`
+	City       string        `json:"city"`
+	Country    string        `json:"country"`
+	HeadImgURL string        `json:"headimgurl"`
+	Privilege  []interface{} `json:"privilege"` // 微信返回的是数组
 }
 
 // WechatOAuthService 微信 OAuth 服务
@@ -154,16 +156,26 @@ func (s *WechatOAuthService) SaveUserAuth(authResult *WechatAuthResult, userInfo
 	// 计算令牌过期时间
 	expiresAt := time.Now().Add(time.Duration(authResult.ExpiresIn) * time.Second)
 
+	// 将 Privilege 数组转换为 JSON 字符串
+	privilegeJSON := "[]"
+	if len(userInfo.Privilege) > 0 {
+		if privilegeBytes, err := json.Marshal(userInfo.Privilege); err == nil {
+			privilegeJSON = string(privilegeBytes)
+		}
+	}
+
 	// 创建数据库用户模型
 	user := &model.WechatUser{
 		OpenID:       authResult.OpenID,
 		UnionID:      authResult.UnionID,
 		Nickname:     userInfo.Nickname,
-		Avatar:       userInfo.HeadImgURL,
+		HeadImgURL:   userInfo.HeadImgURL,
 		Sex:          userInfo.Sex,
+		Language:     userInfo.Language,
 		Province:     userInfo.Province,
 		City:         userInfo.City,
 		Country:      userInfo.Country,
+		Privilege:    privilegeJSON,
 		AccessToken:  authResult.AccessToken,
 		RefreshToken: authResult.RefreshToken,
 		ExpiresAt:    expiresAt,
