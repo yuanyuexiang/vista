@@ -71,6 +71,21 @@ func (r *WechatUserRepository) GetByID(id uint) (*model.WechatUser, error) {
 	return &user, nil
 }
 
+// GetAll 获取所有活跃用户
+func (r *WechatUserRepository) GetAll() ([]model.WechatUser, error) {
+	if r.db == nil {
+		return nil, fmt.Errorf("database not initialized")
+	}
+
+	var users []model.WechatUser
+	err := r.db.Where("is_active = ?", true).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 // Delete 软删除用户
 func (r *WechatUserRepository) Delete(openid string) error {
 	if r.db == nil {

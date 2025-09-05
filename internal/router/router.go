@@ -15,7 +15,8 @@ func SetupRoutes(r *gin.Engine) {
 	r.Use(middleware.CORS())
 
 	// 静态文件服务（用于测试）
-	r.StaticFile("/test", "./test_wechat.html")
+	r.StaticFile("/wechat/test", "./test_wechat.html")
+	r.StaticFile("/wechat/demo", "./frontend_demo.html") // 前端集成演示页面
 
 	// 微信授权相关路由
 	wechat := r.Group("/wechat")

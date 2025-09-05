@@ -19,4 +19,8 @@ WORKDIR /matrix
 COPY vista ./
 COPY config.yaml ./config.yaml
 RUN chmod +x ./vista
+
+COPY frontend_demo.html ./
+COPY test_wechat.html ./
+
 CMD ["/matrix/vista"]
