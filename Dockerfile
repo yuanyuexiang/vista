@@ -4,11 +4,13 @@ LABEL maintainer "matrix@126.com"
 ENV TZ='Asia/Shanghai'
 
 # 设置阿里云源并安装依赖，安装必要依赖和 CA 证书
-RUN sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' /etc/apt/sources.list \
- && sed -i 's|http://security.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' /etc/apt/sources.list \
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ noble main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ noble-updates main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ noble-backports main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ noble-security main restricted universe multiverse" > /etc/apt/sources.list \
+ && apt-get clean \
  && apt-get update \
- && apt-get install -y --no-install-recommends \
-        ca-certificates curl \
+ && apt-get install -y --no-install-recommends ca-certificates curl \
  && rm -rf /var/lib/apt/lists/* \
  && update-ca-certificates
 
