@@ -5,7 +5,6 @@ ENV TZ='Asia/Shanghai'
 
 WORKDIR /matrix
 COPY vista ./
-#COPY swagger ./swagger
-#COPY conf/app-prd.conf    ./conf/app.conf
+COPY config.yaml ./config.yaml
 RUN chmod +x ./vista
 CMD ["/matrix/vista"]

@@ -60,6 +60,7 @@ jobs:
             Dockerfile
             vista
             docker-compose.yaml
+            config.yaml
 
   # 打包镜像
   build-package:
