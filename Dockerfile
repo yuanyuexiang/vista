@@ -3,6 +3,12 @@ LABEL maintainer "matrix@126.com"
 
 ENV TZ='Asia/Shanghai'
 
+# 安装必要依赖和 CA 证书
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl \
+ && rm -rf /var/lib/apt/lists/* \
+ && update-ca-certificates
+
 WORKDIR /matrix
 COPY vista ./
 COPY config.yaml ./config.yaml
