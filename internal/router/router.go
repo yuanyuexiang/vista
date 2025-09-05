@@ -18,6 +18,7 @@ func SetupRoutes(r *gin.Engine) {
 	r.StaticFile("/wechat/test", "./test_wechat.html")
 	r.StaticFile("/wechat/demo", "./wechat_demo.html")      // 微信自动授权演示页面
 	r.StaticFile("/wechat/react-test", "./react_test.html") // React集成测试页面
+	r.StaticFile("/test-redirect", "./test_redirect.html")  // 重定向测试页面
 
 	// 微信授权相关路由
 	wechat := r.Group("/wechat")

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试重定向URL功能</title>
+</head>
+<body>
+    <h1>测试重定向URL功能</h1>
+    <p>点击按钮测试不同的重定向URL参数</p>
+    
+    <button onclick="testRedirect('https://carture.matrix-net.tech/wechat/demo')">
+        测试 /wechat/demo 重定向
+    </button>
+    
+    <button onclick="testRedirect('https://carture.matrix-net.tech/')">
+        测试根路径重定向
+    </button>
+    
+    <button onclick="testRedirect('')">
+        测试默认重定向
+    </button>
+    
+    <div id="result"></div>
+    
+    <script>
+        function testRedirect(redirectUrl) {
+            const baseUrl = 'https://carture.matrix-net.tech/wechat/auth';
+            let testUrl = baseUrl;
+            
+            if (redirectUrl) {
+                testUrl += '?redirect_url=' + encodeURIComponent(redirectUrl);
+            }
+            
+            document.getElementById('result').innerHTML = 
+                '<h3>生成的授权URL:</h3>' +
+                '<code>' + testUrl + '</code><br><br>' +
+                '<a href="' + testUrl + '" target="_blank">点击测试</a>';
+        }
+    </script>
+</body>
+</html>

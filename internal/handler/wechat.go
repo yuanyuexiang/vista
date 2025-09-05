@@ -19,13 +19,16 @@ import (
 
 // WechatAuth 发起微信授权，重定向到微信授权页面
 func WechatAuth(c *gin.Context) {
-	// 生成 state 参数防止 CSRF 攻击
-	state := utils.GenerateState()
+	// 获取前端传递的重定向URL
+	redirectURL := c.Query("redirect_url")
+
+	// 生成 state 参数防止 CSRF 攻击，并在其中编码重定向URL
+	state := utils.GenerateStateWithRedirect(redirectURL)
 
 	// 构建微信授权 URL
 	authURL := buildWechatAuthURL(state)
 
-	fmt.Printf("Generated auth URL: %s\n", authURL)
+	fmt.Printf("Generated auth URL with redirect_url=%s: %s\n", redirectURL, authURL)
 
 	// 重定向到微信授权页面
 	c.Redirect(http.StatusFound, authURL)
@@ -86,11 +89,25 @@ func WechatCallback(c *gin.Context) {
 
 	fmt.Println("Successfully saved user auth to database")
 
-	// 检查是否需要重定向到前端应用
-	redirectURL := c.Query("redirect_url")
+	// 解析state参数获取重定向URL
+	stateData, err := utils.ParseStateData(state)
+	if err != nil {
+		fmt.Printf("Error parsing state data: %v\n", err)
+	}
+
+	// 使用state中的重定向URL，如果没有则使用查询参数，最后使用默认值
+	redirectURL := ""
+	if stateData != nil && stateData.RedirectURL != "" {
+		redirectURL = stateData.RedirectURL
+	}
+	if redirectURL == "" {
+		redirectURL = c.Query("redirect_url")
+	}
 	if redirectURL == "" {
 		redirectURL = "https://carture.matrix-net.tech/" // 默认重定向到React应用
 	}
+
+	fmt.Printf("Using redirect URL: %s\n", redirectURL)
 
 	// 构建用户信息JSON
 	userInfoData := gin.H{
