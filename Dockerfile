@@ -24,5 +24,6 @@ COPY frontend_demo.html ./frontend_demo.html
 COPY test_wechat.html ./test_wechat.html
 COPY react_test.html ./react_test.html
 COPY react-components ./react-components
+COPY wechat_demo.html ./wechat_demo.html
 
 CMD ["/matrix/vista"]

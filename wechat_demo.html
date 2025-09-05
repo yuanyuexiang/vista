@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>微信登录示例</title>
+    <title>微信登录 - 自动授权演示</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -92,6 +92,7 @@
             padding: 10px;
             border-radius: 4px;
             margin: 10px 0;
+            font-weight: bold;
         }
         .status.success {
             background: #f6ffed;
@@ -118,12 +119,30 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .wechat-notice {
+            background: #fff7e6;
+            border: 1px solid #ffd666;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ad6800;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔐 微信登录集成示例</h1>
-        <p>这个页面演示了前端如何获取微信登录后的用户信息</p>
+        <h1>🔐 微信登录自动授权演示</h1>
+        <p>这个页面会自动检测微信登录状态，未登录时自动跳转授权。</p>
+
+        <!-- 微信提示 -->
+        <div class="wechat-notice">
+            <strong>💡 使用说明：</strong><br>
+            1. 在微信中打开此页面：<code>https://carture.matrix-net.tech/wechat/demo</code><br>
+            2. 如果未登录会自动跳转到微信授权页面<br>
+            3. 授权后会自动返回并显示用户信息<br>
+            4. 再次访问时会直接显示已保存的用户信息
+        </div>
 
         <!-- 用户信息显示区域 -->
         <div id="userDisplay" class="hidden">
@@ -135,7 +154,7 @@
 
         <!-- 登录按钮区域 -->
         <div id="loginSection" style="display: none;">
-            <h3>� 微信登录</h3>
+            <h3>🔑 微信登录</h3>
             <p>请选择登录方式：</p>
             
             <button class="btn" onclick="manualAuth()">
@@ -170,27 +189,29 @@
 
         <!-- 技术说明 -->
         <div class="method-section">
-            <h3>📖 实现说明</h3>
+            <h3>📖 自动授权流程</h3>
             
-            <h4>方法1: 直接跳转</h4>
-            <p>用户点击登录后直接跳转到微信授权页面，授权完成后微信会回调到我们的服务器，服务器返回包含用户信息的HTML页面。</p>
+            <h4>1. 访问检测</h4>
+            <p>页面加载时自动执行以下检测流程：</p>
+            <ul>
+                <li>检查URL参数中是否有授权回调信息</li>
+                <li>检查本地存储中是否有有效用户信息</li>
+                <li>验证是否在微信浏览器环境中</li>
+                <li>自动发起授权或显示用户信息</li>
+            </ul>
             
-            <h4>方法2: 弹窗登录</h4>
-            <p>使用 window.open() 打开登录页面，通过 postMessage 接收用户信息。</p>
+            <h4>2. 用户信息缓存</h4>
+            <p>授权成功后，用户信息会保存到 localStorage，包含24小时过期机制。</p>
             
-            <h4>方法3: iframe 登录</h4>
-            <p>在页面中嵌入 iframe，通过 postMessage 通信获取用户信息。</p>
-            
-            <h4>方法4: 从 localStorage 读取</h4>
-            <p>登录成功后，用户信息会自动保存到 localStorage，页面可以随时读取。</p>
+            <h4>3. 授权重定向</h4>
+            <p>授权完成后会自动重定向回当前页面，并携带用户信息参数。</p>
             
             <div class="code-block">
-                <pre>// 从 localStorage 读取用户信息
-const userInfo = localStorage.getItem('wechat_user_info');
-if (userInfo) {
-    const user = JSON.parse(userInfo);
-    console.log('用户信息:', user);
-}</pre>
+                <pre>// 自动授权检测流程
+1. checkAuthFromURL() - 检查URL回调参数
+2. getUserInfoFromStorage() - 检查本地缓存
+3. isWechatBrowser() - 验证微信环境
+4. autoStartWechatAuth() - 自动发起授权</pre>
             </div>
         </div>
 
@@ -290,7 +311,7 @@ GET /wechat/callback       - 授权回调</pre>
 
         // 自动发起微信授权
         function autoStartWechatAuth() {
-            showStatus('正在跳转到微信授权页面...', 'info');
+            showStatus('🔄 正在跳转到微信授权页面...', 'info');
             
             // 构建重定向到当前页面的授权URL
             const currentURL = window.location.href.split('?')[0]; // 去除现有参数
@@ -304,7 +325,7 @@ GET /wechat/callback       - 授权回调</pre>
 
         // 页面加载时的自动授权检测逻辑
         function initAutoAuth() {
-            showStatus('正在检查登录状态...', 'info');
+            showStatus('🔍 正在检查登录状态...', 'info');
 
             // 1. 首先检查URL参数中是否有授权回调信息
             const authResult = checkAuthFromURL();
@@ -351,7 +372,7 @@ GET /wechat/callback       - 授权回调</pre>
 
         // 手动重新授权
         function manualAuth() {
-            showStatus('正在重新授权...', 'info');
+            showStatus('🔄 正在重新授权...', 'info');
             clearUserInfo();
             autoStartWechatAuth();
         }
@@ -473,7 +494,7 @@ GET /wechat/callback       - 授权回调</pre>
         // 测试 API 接口
         async function testAPI() {
             try {
-                showStatus('正在测试 API 接口...', 'success');
+                showStatus('正在测试 API 接口...', 'info');
                 
                 // 测试获取所有用户
                 const response = await fetch('https://carture.matrix-net.tech/api/users');

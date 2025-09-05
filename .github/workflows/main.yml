@@ -65,6 +65,7 @@ jobs:
             test_wechat.html
             react_test.html
             react-components
+            wechat_demo.html
 
   # 打包镜像
   build-package:

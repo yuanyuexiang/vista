@@ -16,7 +16,7 @@ func SetupRoutes(r *gin.Engine) {
 
 	// 静态文件服务（用于测试）
 	r.StaticFile("/wechat/test", "./test_wechat.html")
-	r.StaticFile("/wechat/demo", "./frontend_demo.html")    // 前端集成演示页面
+	r.StaticFile("/wechat/demo", "./wechat_demo.html")      // 微信自动授权演示页面
 	r.StaticFile("/wechat/react-test", "./react_test.html") // React集成测试页面
 
 	// 微信授权相关路由
