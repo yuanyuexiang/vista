@@ -87,8 +87,8 @@
 ## 🔌 API 接口
 
 ### GraphQL Endpoint
-- **地址**: `http://localhost:8080/wechat/query`
-- **Playground**: `http://localhost:8080/`
+- **地址**: `https://carture.matrix-net.tech/wechat/query`
+- **Playground**: `https://carture.matrix-net.tech/`
 
 ### 主要操作
 

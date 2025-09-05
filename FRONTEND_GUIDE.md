@@ -6,9 +6,9 @@
 
 ## 🚀 服务地址
 
-- **微信授权接口**: `http://localhost:8080/wechat/auth` (发起授权跳转)
-- **微信回调接口**: `http://localhost:8080/wechat/callback` (微信授权回调)
-- **健康检查**: `http://localhost:8080/health` (服务状态检查)
+- **微信授权接口**: `https://carture.matrix-net.tech/wechat/auth` (发起授权跳转)
+- **微信回调接口**: `https://carture.matrix-net.tech/wechat/callback` (微信授权回调)
+- **健康检查**: `https://carture.matrix-net.tech/health` (服务状态检查)
 
 ## 🔄 完整授权流程
 
@@ -28,7 +28,7 @@
 ```javascript
 function startWechatAuth() {
   // 直接跳转到后端授权接口
-  window.location.href = 'http://localhost:8080/wechat/auth';
+  window.location.href = 'https://carture.matrix-net.tech/wechat/auth';
 }
 ```
 
@@ -37,7 +37,7 @@ function startWechatAuth() {
 <button onclick="startWechatAuth()">微信登录</button>
 
 <!-- 或者直接使用链接 -->
-<a href="http://localhost:8080/wechat/auth">微信登录</a>
+<a href="https://carture.matrix-net.tech/wechat/auth">微信登录</a>
 ```
 
 ### 2. 处理授权成功回调
@@ -114,7 +114,7 @@ async function callProtectedAPI(endpoint, data = {}) {
   }
   
   try {
-    const response = await fetch(`http://localhost:8080${endpoint}`, {
+    const response = await fetch(`https://carture.matrix-net.tech${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ async function callProtectedAPI(endpoint, data = {}) {
 // 微信授权工具类
 class WechatAuthManager {
   constructor(config = {}) {
-    this.baseURL = config.baseURL || 'http://localhost:8080';
+    this.baseURL = config.baseURL || 'https://carture.matrix-net.tech';
     this.frontendDomain = config.frontendDomain || 'http://localhost:3000';
   }
   
@@ -194,7 +194,7 @@ class WechatAuthManager {
 
 // 使用示例
 const authManager = new WechatAuthManager({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'https://carture.matrix-net.tech',
   frontendDomain: 'http://localhost:3000'
 });
 
@@ -228,13 +228,13 @@ go run main.go
 服务启动后显示：
 ```
 Server starting on port 8080
-WeChat Auth URL: http://localhost:8080/wechat/auth
-WeChat Callback URL: http://localhost:8080/wechat/callback
+WeChat Auth URL: https://carture.matrix-net.tech/wechat/auth
+WeChat Callback URL: https://carture.matrix-net.tech/wechat/callback
 ```
 
 ### 2. 测试授权流程
 
-1. 浏览器访问：`http://localhost:8080/wechat/auth`
+1. 浏览器访问：`https://carture.matrix-net.tech/wechat/auth`
 2. 应该会重定向到微信授权页面
 3. 授权完成后会回调到 `/wechat/callback`
 4. 最终重定向到前端页面
@@ -242,7 +242,7 @@ WeChat Callback URL: http://localhost:8080/wechat/callback
 ### 3. 健康检查
 
 ```bash
-curl http://localhost:8080/health
+curl https://carture.matrix-net.tech/health
 ```
 
 预期响应：
@@ -287,7 +287,7 @@ curl http://localhost:8080/health
 <body>
     <div style="text-align: center; margin-top: 100px;">
         <h2>欢迎使用 Vista 服务</h2>
-        <a href="http://localhost:8080/wechat/auth" 
+        <a href="https://carture.matrix-net.tech/wechat/auth" 
            style="display: inline-block; padding: 10px 20px; background: #07c160; color: white; text-decoration: none; border-radius: 5px;">
             微信登录
         </a>
