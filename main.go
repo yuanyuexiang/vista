@@ -32,20 +32,23 @@ func main() {
 	// 设置路由
 	router.SetupRoutes(r)
 
+	cfg := config.Get()
+
 	// 启动HTTP服务器
 	server := &http.Server{
-		Addr:           fmt.Sprintf(":%d", config.C.Server.Port),
+		Addr:           fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler:        r,
-		ReadTimeout:    config.C.Server.ReadTimeout,
-		WriteTimeout:   config.C.Server.WriteTimeout,
+		ReadTimeout:    cfg.Server.ReadTimeout,
+		WriteTimeout:   cfg.Server.WriteTimeout,
 		MaxHeaderBytes: 1 << 20, // 1MB
 	}
 
 	// 在goroutine中启动服务器
 	go func() {
-		fmt.Printf("Server starting on port %d\n", config.C.Server.Port)
-		fmt.Printf("WeChat Auth URL: http://localhost:%d/wechat/auth\n", config.C.Server.Port)
-		fmt.Printf("WeChat Callback URL: http://localhost:%d/wechat/callback\n", config.C.Server.Port)
+		fmt.Printf("Server starting on port %d\n", cfg.Server.Port)
+		fmt.Printf("WeChat Auth URL: http://localhost:%d/wechat/auth\n", cfg.Server.Port)
+		fmt.Printf("WeChat Callback URL: http://localhost:%d/wechat/callback\n", cfg.Server.Port)
+		fmt.Printf("WeChat Config - AppID: %s, RedirectURI: %s\n", cfg.Wechat.AppID, cfg.Wechat.RedirectURI)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(fmt.Sprintf("Failed to start server: %v", err))

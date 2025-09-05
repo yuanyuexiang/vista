@@ -48,13 +48,18 @@ func NewWechatOAuthService(userRepo *repository.WechatUserRepository) *WechatOAu
 
 // ExchangeCodeForToken 用授权码换取 access_token
 func (s *WechatOAuthService) ExchangeCodeForToken(code string) (*WechatAuthResult, error) {
+	cfg := config.Get()
+
 	// 构建请求 URL
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
-		config.C.Wechat.AppID, config.C.Wechat.AppSecret, code)
+		cfg.Wechat.AppID, cfg.Wechat.AppSecret, code)
+
+	logger.Infof("Requesting access token from WeChat API - AppID: %s, Code: %s", cfg.Wechat.AppID, code)
 
 	// 发送 HTTP 请求
 	resp, err := http.Get(url)
 	if err != nil {
+		logger.Errorf("Failed to request access token from WeChat API: %v", err)
 		return nil, fmt.Errorf("failed to request access token: %v", err)
 	}
 	defer resp.Body.Close()
@@ -62,12 +67,16 @@ func (s *WechatOAuthService) ExchangeCodeForToken(code string) (*WechatAuthResul
 	// 读取响应
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		logger.Errorf("Failed to read response body from WeChat API: %v", err)
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
+
+	logger.Infof("WeChat API response for access token: %s", string(body))
 
 	// 解析响应
 	var result WechatAuthResult
 	if err := json.Unmarshal(body, &result); err != nil {
+		logger.Errorf("Failed to parse WeChat API response: %v, Body: %s", err, string(body))
 		return nil, fmt.Errorf("failed to parse response: %v", err)
 	}
 
@@ -79,11 +88,14 @@ func (s *WechatOAuthService) ExchangeCodeForToken(code string) (*WechatAuthResul
 			ErrMsg  string `json:"errmsg"`
 		}
 		if err := json.Unmarshal(body, &errorResp); err == nil && errorResp.ErrCode != 0 {
+			logger.Errorf("WeChat API returned error: %d - %s", errorResp.ErrCode, errorResp.ErrMsg)
 			return nil, fmt.Errorf("wechat api error: %d - %s", errorResp.ErrCode, errorResp.ErrMsg)
 		}
+		logger.Errorf("Invalid response from WeChat API: %s", string(body))
 		return nil, fmt.Errorf("invalid response from wechat api")
 	}
 
+	logger.Infof("Successfully got access token - OpenID: %s, ExpiresIn: %d", result.OpenID, result.ExpiresIn)
 	return &result, nil
 }
 
@@ -93,9 +105,12 @@ func (s *WechatOAuthService) GetUserInfo(accessToken, openID string) (*WechatUse
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN",
 		accessToken, openID)
 
+	logger.Infof("Requesting user info from WeChat API - OpenID: %s", openID)
+
 	// 发送 HTTP 请求
 	resp, err := http.Get(url)
 	if err != nil {
+		logger.Errorf("Failed to request user info from WeChat API: %v", err)
 		return nil, fmt.Errorf("failed to request user info: %v", err)
 	}
 	defer resp.Body.Close()
@@ -103,12 +118,16 @@ func (s *WechatOAuthService) GetUserInfo(accessToken, openID string) (*WechatUse
 	// 读取响应
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		logger.Errorf("Failed to read user info response body: %v", err)
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
+
+	logger.Infof("WeChat API user info response: %s", string(body))
 
 	// 解析响应
 	var userInfo WechatUserInfo
 	if err := json.Unmarshal(body, &userInfo); err != nil {
+		logger.Errorf("Failed to parse user info response: %v, Body: %s", err, string(body))
 		return nil, fmt.Errorf("failed to parse user info: %v", err)
 	}
 
@@ -119,11 +138,14 @@ func (s *WechatOAuthService) GetUserInfo(accessToken, openID string) (*WechatUse
 			ErrMsg  string `json:"errmsg"`
 		}
 		if err := json.Unmarshal(body, &errorResp); err == nil && errorResp.ErrCode != 0 {
+			logger.Errorf("WeChat API user info error: %d - %s", errorResp.ErrCode, errorResp.ErrMsg)
 			return nil, fmt.Errorf("wechat api error: %d - %s", errorResp.ErrCode, errorResp.ErrMsg)
 		}
+		logger.Errorf("Invalid user info response from WeChat API: %s", string(body))
 		return nil, fmt.Errorf("invalid user info response from wechat api")
 	}
 
+	logger.Infof("Successfully got user info - OpenID: %s, Nickname: %s", userInfo.OpenID, userInfo.Nickname)
 	return &userInfo, nil
 }
 
