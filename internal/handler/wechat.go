@@ -22,6 +22,8 @@ func WechatAuth(c *gin.Context) {
 	// 构建微信授权 URL
 	authURL := buildWechatAuthURL(state)
 
+	fmt.Printf("Generated auth URL: %s\n", authURL)
+
 	// 重定向到微信授权页面
 	c.Redirect(http.StatusFound, authURL)
 }
@@ -62,15 +64,14 @@ func WechatCallback(c *gin.Context) {
 
 	fmt.Printf("Successfully got access token for OpenID: %s\n", authResult.OpenID)
 
-	// 获取用户信息
-	userInfo, err := wechatService.GetUserInfo(authResult.AccessToken, authResult.OpenID)
-	if err != nil {
-		fmt.Printf("Error getting user info: %v\n", err)
-		response.InternalServerError(c, fmt.Sprintf("获取用户信息失败: %v", err))
-		return
+	// 订阅号只能获取 openid，无法获取用户详细信息
+	// 跳过获取用户信息步骤，直接使用基本信息
+	userInfo := &service.WechatUserInfo{
+		OpenID:   authResult.OpenID,
+		Nickname: "微信用户", // 订阅号无法获取真实昵称
 	}
 
-	fmt.Printf("Successfully got user info for: %s\n", userInfo.Nickname)
+	fmt.Printf("Using basic user info for subscription account - OpenID: %s\n", userInfo.OpenID)
 
 	// 保存用户授权信息
 	if err := wechatService.SaveUserAuth(authResult, userInfo); err != nil {
@@ -81,19 +82,13 @@ func WechatCallback(c *gin.Context) {
 
 	fmt.Println("Successfully saved user auth to database")
 
-	// 生成应用自己的 JWT token（这里简化为直接返回微信信息）
-	// 实际项目中应该：
-	// 1. 根据 openid 查询或创建用户
-	// 2. 生成 JWT token
-	// 3. 重定向到前端页面，带上 token
-
-	// 返回成功响应而不是重定向
+	// 返回成功响应
 	response.Success(c, gin.H{
 		"message": "微信登录成功",
 		"user_info": gin.H{
 			"openid":   authResult.OpenID,
-			"nickname": userInfo.Nickname,
-			"avatar":   userInfo.HeadImgURL,
+			"nickname": "微信用户", // 订阅号限制
+			"note":     "订阅号只能获取openid，无法获取用户详细信息",
 		},
 	})
 }
@@ -122,10 +117,10 @@ func buildWechatAuthURL(state string) string {
 	params.Add("appid", cfg.Wechat.AppID)
 	params.Add("redirect_uri", cfg.Wechat.RedirectURI)
 	params.Add("response_type", "code")
-	params.Add("scope", "snsapi_userinfo") // 获取用户信息
+	params.Add("scope", "snsapi_base") // 订阅号只能使用 snsapi_base
 	params.Add("state", state)
 
-	fmt.Printf("Building WeChat MP auth URL - AppID: %s, RedirectURI: %s, State: %s\n",
+	fmt.Printf("Building WeChat MP auth URL (snsapi_base) - AppID: %s, RedirectURI: %s, State: %s\n",
 		cfg.Wechat.AppID, cfg.Wechat.RedirectURI, state)
 
 	return fmt.Sprintf("%s?%s#wechat_redirect", baseURL, params.Encode())
