@@ -17,7 +17,7 @@ deb http://mirrors.aliyun.com/ubuntu/ noble-security main restricted universe mu
 
 WORKDIR /matrix
 COPY vista ./
-COPY config.yaml ./config.yaml
+COPY config-production.yaml ./config.yaml
 RUN chmod +x ./vista
 
 COPY wechat_frontend_driven.html ./wechat_frontend_driven.html

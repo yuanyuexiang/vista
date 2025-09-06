@@ -60,7 +60,7 @@ jobs:
             Dockerfile
             vista
             docker-compose.yaml
-            config.yaml
+            config-production.yaml
             wechat_frontend_driven.html
 
   # 打包镜像

@@ -6,7 +6,7 @@ server:
 
 database:
   driver: mysql
-  host: 117.72.204.201
+  host: mysql
   port: 3306
   username: root
   password: "njjzwljsyxgs"
