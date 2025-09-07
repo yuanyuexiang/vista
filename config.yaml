@@ -10,7 +10,7 @@ database:
   port: 3306
   username: root
   password: "njjzwljsyxgs"
-  dbname: directus
+  dbname: vista
   charset: utf8mb4
   parse_time: true
   loc: Local
