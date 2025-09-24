@@ -232,7 +232,7 @@ window.onload = function() {
 ## 演示页面
 
 ### 前端驱动模式演示
-**URL:** `https://carture.matrix-net.tech/wechat/frontend-driven`
+**URL:** `https://carture.kcbaotech.com/wechat/frontend-driven`
 
 **特性：**
 - ✅ 完全由前端控制授权流程

@@ -34,7 +34,7 @@ Vista后端API                    │
 
 ```javascript
 const CONFIG = {
-    API_BASE: 'https://carture.matrix-net.tech',
+    API_BASE: 'https://carture.kcbaotech.com',
     WECHAT_APP_ID: 'wx1eb05232cfbb49f7', // 微信AppID
 };
 ```
@@ -257,7 +257,7 @@ async function checkAuthStatus() {
     <script>
         // 配置
         const CONFIG = {
-            API_BASE: 'https://carture.matrix-net.tech',
+            API_BASE: 'https://carture.kcbaotech.com',
             WECHAT_APP_ID: 'wx1eb05232cfbb49f7'
         };
 
@@ -321,7 +321,7 @@ const useWechatAuth = () => {
     const [needAuth, setNeedAuth] = useState(false);
 
     const CONFIG = {
-        API_BASE: 'https://carture.matrix-net.tech',
+        API_BASE: 'https://carture.kcbaotech.com',
         WECHAT_APP_ID: 'wx1eb05232cfbb49f7'
     };
 
@@ -479,7 +479,7 @@ const App = () => {
 ./vista
 
 # 2. 访问测试页面
-https://carture.matrix-net.tech/vista/wechat/frontend-driven
+https://carture.kcbaotech.com/vista/wechat/frontend-driven
 ```
 
 ### 调试技巧
@@ -490,7 +490,7 @@ https://carture.matrix-net.tech/vista/wechat/frontend-driven
 ## 📚 相关资源
 
 - [微信公众平台开发文档](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html)
-- [完整示例页面](https://carture.matrix-net.tech/vista/wechat/frontend-driven)
+- [完整示例页面](https://carture.kcbaotech.com/vista/wechat/frontend-driven)
 - [API接口文档](./API_DOCUMENTATION.md)
 
 ---

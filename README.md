@@ -36,7 +36,7 @@ Vista是一个简洁高效的微信OAuth认证服务，采用前端驱动模式�
 go build -o vista .
 ./vista
 
-# 服务运行在 https://carture.matrix-net.tech
+# 服务运行在 https://carture.kcbaotech.com
 ```
 
 ### 2. 前端集成
@@ -46,7 +46,7 @@ go build -o vista .
 ```html
 <script>
 const CONFIG = {
-    API_BASE: 'https://carture.matrix-net.tech',
+    API_BASE: 'https://carture.kcbaotech.com',
     WECHAT_APP_ID: 'wx1eb05232cfbb49f7'
 };
 
@@ -95,7 +95,7 @@ const useWechatAuth = () => {
             return;
         }
         
-        const response = await fetch(`https://carture.matrix-net.tech/vista/wechat/api/user/${openid}`);
+        const response = await fetch(`https://carture.kcbaotech.com/vista/wechat/api/user/${openid}`);
         const data = await response.json();
         
         if (data.code === 200 && !data.data.need_auth) {
@@ -204,7 +204,7 @@ log:
 
 访问在线演示页面体验完整流程：
 ```
-https://carture.matrix-net.tech/vista/wechat/frontend-driven
+https://carture.kcbaotech.com/vista/wechat/frontend-driven
 ```
 
 ## 📚 文档

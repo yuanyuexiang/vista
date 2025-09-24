@@ -21,8 +21,8 @@ database:
 wechat:
   #app_id: "wx1eb05232cfbb49f7"
   #app_secret: "d50662b5f90b97fc95e0ddc3eaaf7b21"
-  #redirect_uri: "https://carture.matrix-net.tech/wechat/callback"
-  #auth_domain: "carture.matrix-net.tech"
+  #redirect_uri: "https://carture.kcbaotech.com/wechat/callback"
+  #auth_domain: "carture.kcbaotech.com"
   app_id: "wx1eb05232cfbb49f7"
   app_secret: "d50662b5f90b97fc95e0ddc3eaaf7b21"
   redirect_uri: "https://carture.kcbaotech.com/wechat/callback"
